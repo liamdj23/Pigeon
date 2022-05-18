@@ -23,4 +23,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Pigeon
-        path: src/dist/pigeon.exe
+        path: dist/pigeon.exe
