@@ -1,4 +1,3 @@
-
 name: Package Application with Pyinstaller
 
 on:
@@ -9,21 +8,19 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
-    - uses: actions/setup-python@v3
+      uses: actions/setup-python@v3
       with:
         python-version: '3.10'
         cache: 'pip'
-    - run: pip install -r requirements.txt
+      run: pip install -r requirements.txt
     - name: Build
-    - run: pyinstaller pigeon.spec
-
-    - uses: actions/upload-artifact@v2
+      run: pyinstaller pigeon.spec
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
       with:
         name: Pigeon
         path: dist/pigeon.exe
