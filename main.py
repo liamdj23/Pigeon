@@ -34,10 +34,15 @@ class Pigeon(tk.Tk):
         self.config(highlightbackground='black')
         self.overrideredirect(True)
         self.wm_attributes('-transparentcolor','black')
-        self.wm_attributes("-topmost", True)
+        self.hide_under_apps = True
+        self.wm_attributes("-topmost", self.hide_under_apps)
         self.label = tk.Label(self, bd=0, bg='black')
         self.label.pack()
         menu = tk.Menu(self, tearoff=0)
+        def switch_hide_under_apps():
+            self.hide_under_apps = not self.hide_under_apps
+            self.wm_attributes("-topmost", self.hide_under_apps)
+        menu.add_checkbutton(label="Hide under apps", command=switch_hide_under_apps, onvalue=True, offvalue=False, variable=self.hide_under_apps)
         menu.add_command(label="Exit", command=self.quit)
         menu.add_separator()
         menu.add_command(label="Created by liamdj23", state="disabled")
