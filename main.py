@@ -4,6 +4,10 @@ import tkinter as tk
 import os
 from SwSpotify import spotify, SpotifyNotRunning
 
+class UnsupportedPlatform(Exception):
+    def __init__(self, message="This program can only run on Windows.") -> None:
+        super().__init__(message)
+
 class Pigeon(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -146,5 +150,8 @@ class Pigeon(tk.Tk):
         self.after(1, self.update, self.cycle, self.check, self.event_number, self.x)
         self.mainloop()
 
-app = Pigeon()
-app.start()
+if sys.platform.startswith("win"):
+    app = Pigeon()
+    app.start()
+else:
+    raise UnsupportedPlatform
