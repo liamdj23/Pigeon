@@ -29,6 +29,7 @@ exe = EXE(
     a.datas,
     [],
     name='pigeon',
+    icon='icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
