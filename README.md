@@ -6,4 +6,4 @@
 - 🚶 Walking
 - 🍴 Eating
 - 😴 Sleeping
-- 🎤 Singing (require Spotify installed)
+- 🎤 Singing (requires Spotify installed)
