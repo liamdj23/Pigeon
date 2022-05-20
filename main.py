@@ -2,6 +2,8 @@ import random
 import sys
 import tkinter as tk
 import os
+from tkinter import messagebox
+import shutil
 from SwSpotify import spotify, SpotifyNotRunning
 
 class UnsupportedPlatform(Exception):
@@ -21,6 +23,7 @@ class Pigeon(tk.Tk):
         self.walk_right = [8, 9]
         self.event_number = random.randrange(1, 3, 1)
         self.go_eat = False
+        self.path = os.getenv("APPDATA") + "\\Pigeon"
 
         self.idle = [tk.PhotoImage(file=self.resource_path("assets/idle.gif"), format='gif -index %i' %(i)) for i in range(5)] #idle gif
         self.idle_to_sleep = [tk.PhotoImage(file=self.resource_path("assets/idle_to_sleep.gif"), format='gif -index %i' %(i)) for i in range(8)] #idle to sleep gif
@@ -38,6 +41,7 @@ class Pigeon(tk.Tk):
         self.wm_attributes("-topmost", self.hide_under_apps)
         self.label = tk.Label(self, bd=0, bg='black')
         self.label.pack()
+
         menu = tk.Menu(self, tearoff=0)
         def switch_hide_under_apps():
             self.hide_under_apps = not self.hide_under_apps
@@ -69,6 +73,12 @@ class Pigeon(tk.Tk):
     def clickwin(self, event):
         self._offsetx = event.x
         self._offsety = event.y
+
+    def is_installed(self) -> bool:
+        if os.path.isdir(self.path):
+            if os.path.isfile(self.path + "\\pigeon.exe"):
+                return True
+        return False
 
     def event(self, cycle: int, check: int, event_number: int) -> None:
         if self.go_eat:
@@ -171,6 +181,14 @@ class Pigeon(tk.Tk):
 
 if sys.platform.startswith("win"):
     app = Pigeon()
+    if not app.is_installed():
+        answer = messagebox.askyesno("Pigeon Installer", "Do you want to install Pigeon?")
+        if answer is True:
+            if not os.path.exists(app.path):
+                os.makedirs(app.path)
+            shutil.copyfile(os.path.realpath(sys.executable), app.path + "\\pigeon.exe")
+            os.system(app.path + "\\pigeon.exe")
+            app.quit()
     app.start()
 else:
     raise UnsupportedPlatform
