@@ -5,6 +5,7 @@ import os
 from tkinter import messagebox
 import shutil
 from SwSpotify import spotify, SpotifyNotRunning
+import winreg
 
 class UnsupportedPlatform(Exception):
     def __init__(self, message="This program can only run on Windows.") -> None:
@@ -24,6 +25,14 @@ class Pigeon(tk.Tk):
         self.event_number = random.randrange(1, 3, 1)
         self.go_eat = False
         self.path = os.getenv("APPDATA") + "\\Pigeon"
+        
+        self.autostart = True
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
+        try:
+            winreg.QueryValueEx(registry_key, "Pigeon")
+        except FileNotFoundError:
+            self.autostart = False
+        winreg.CloseKey(registry_key)
 
         self.idle = [tk.PhotoImage(file=self.resource_path("assets/idle.gif"), format='gif -index %i' %(i)) for i in range(5)] #idle gif
         self.idle_to_sleep = [tk.PhotoImage(file=self.resource_path("assets/idle_to_sleep.gif"), format='gif -index %i' %(i)) for i in range(8)] #idle to sleep gif
@@ -47,6 +56,17 @@ class Pigeon(tk.Tk):
             self.hide_under_apps = not self.hide_under_apps
             self.wm_attributes("-topmost", self.hide_under_apps)
         menu.add_checkbutton(label="Hide under apps", command=switch_hide_under_apps, onvalue=True, offvalue=False, variable=self.hide_under_apps)
+        def switch_autostart():
+            registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
+            if not self.autostart:
+                winreg.SetValueEx(registry_key, "Pigeon", 0, winreg.REG_SZ, self.path + "\\pigeon.exe")
+                winreg.CloseKey(registry_key)
+                self.autostart = True
+            else:
+                winreg.DeleteValue(registry_key, "Pigeon")
+                winreg.CloseKey(registry_key)
+                self.autostart = False
+        menu.add_checkbutton(label="Autostart", command=switch_autostart, onvalue=True, offvalue=False, variable=self.autostart)
         menu.add_command(label="Exit", command=self.quit)
         menu.add_separator()
         menu.add_command(label="Created by liamdj23", state="disabled")
