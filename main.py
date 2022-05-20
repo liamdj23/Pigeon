@@ -6,6 +6,7 @@ from tkinter import messagebox
 import shutil
 from SwSpotify import spotify, SpotifyNotRunning
 import winreg
+import subprocess
 
 class UnsupportedPlatform(Exception):
     def __init__(self, message="This program can only run on Windows.") -> None:
@@ -56,17 +57,8 @@ class Pigeon(tk.Tk):
             self.hide_under_apps = not self.hide_under_apps
             self.wm_attributes("-topmost", self.hide_under_apps)
         menu.add_checkbutton(label="Hide under apps", command=switch_hide_under_apps, onvalue=True, offvalue=False, variable=self.hide_under_apps)
-        def switch_autostart():
-            registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
-            if not self.autostart:
-                winreg.SetValueEx(registry_key, "Pigeon", 0, winreg.REG_SZ, self.path + "\\pigeon.exe")
-                winreg.CloseKey(registry_key)
-                self.autostart = True
-            else:
-                winreg.DeleteValue(registry_key, "Pigeon")
-                winreg.CloseKey(registry_key)
-                self.autostart = False
-        menu.add_checkbutton(label="Autostart", command=switch_autostart, onvalue=True, offvalue=False, variable=self.autostart)
+        if self.is_installed():
+            menu.add_checkbutton(label="Autostart", command=self.switch_autostart, onvalue=True, offvalue=False, variable=self.autostart)
         menu.add_command(label="Exit", command=self.quit)
         menu.add_separator()
         menu.add_command(label="Created by liamdj23", state="disabled")
@@ -76,6 +68,7 @@ class Pigeon(tk.Tk):
             finally:
                 menu.grab_release()
         self.bind("<Button-3>", do_popup)
+
         def do_eat(event):
             self.go_eat = True
         self.bind("<Double-Button-1>", do_eat)
@@ -99,6 +92,17 @@ class Pigeon(tk.Tk):
             if os.path.isfile(self.path + "\\pigeon.exe"):
                 return True
         return False
+
+    def switch_autostart(self) -> None:
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
+        if not self.autostart:
+            winreg.SetValueEx(registry_key, "Pigeon", 0, winreg.REG_SZ, self.path + "\\pigeon.exe")
+            winreg.CloseKey(registry_key)
+            self.autostart = True
+        else:
+            winreg.DeleteValue(registry_key, "Pigeon")
+            winreg.CloseKey(registry_key)
+            self.autostart = False
 
     def event(self, cycle: int, check: int, event_number: int) -> None:
         if self.go_eat:
@@ -199,16 +203,20 @@ class Pigeon(tk.Tk):
         self.after(1, self.update, self.cycle, self.check, self.event_number)
         self.mainloop()
 
+    def install(self) -> None:
+        answer = messagebox.askyesno("Pigeon Installer", "Do you want to install Pigeon?")
+        if answer is False:
+            return
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        shutil.copyfile(os.path.realpath(sys.executable), self.path + "\\pigeon.exe")
+        os.system(self.path + "\\pigeon.exe")
+        sys.exit(0)
+
 if sys.platform.startswith("win"):
     app = Pigeon()
     if not app.is_installed():
-        answer = messagebox.askyesno("Pigeon Installer", "Do you want to install Pigeon?")
-        if answer is True:
-            if not os.path.exists(app.path):
-                os.makedirs(app.path)
-            shutil.copyfile(os.path.realpath(sys.executable), app.path + "\\pigeon.exe")
-            os.system(app.path + "\\pigeon.exe")
-            app.quit()
+        app.install()
     app.start()
 else:
     raise UnsupportedPlatform
