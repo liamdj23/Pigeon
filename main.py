@@ -20,7 +20,7 @@ class Pigeon(tk.Tk):
         self.cycle = 0
         self.check = 1
         self.idle_num = [1, 2, 3, 4]
-        self.sleep_num = [11, 12, 13, 15, 16]
+        self.sleep_num = [12, 13, 15, 16, 17]
         self.walk_left = [6, 7]
         self.walk_right = [8, 9]
         self.event_number = random.randrange(1, 3, 1)
@@ -43,6 +43,7 @@ class Pigeon(tk.Tk):
         self.walk_negative = [tk.PhotoImage(file=self.resource_path("assets/walking_negative.gif"), format='gif -index %i' %(i)) for i in range(8)] #walk to right gif
         self.eat = [tk.PhotoImage(file=self.resource_path("assets/eat.gif"), format='gif -index %i' %(i)) for i in range(8)] #eat
         self.sing = [tk.PhotoImage(file=self.resource_path("assets/sing.gif"), format='gif -index %i' %(i)) for i in range(16)] #sing
+        self.dance = [tk.PhotoImage(file=self.resource_path("assets/dance.gif"), format='gif -index %i' %(i)) for i in range(8)] #dance
 
         self.config(highlightbackground='black')
         self.overrideredirect(True)
@@ -108,7 +109,7 @@ class Pigeon(tk.Tk):
         if self.go_eat:
             check = 6
             print('eat')
-            self.after(300, self.update, cycle, check, event_number)#no. 17 = eat
+            self.after(300, self.update, cycle, check, event_number)
             return
         if event_number in self.idle_num:
             check = 0
@@ -129,7 +130,7 @@ class Pigeon(tk.Tk):
         elif event_number in self.sleep_num:
             check = 2
             print('sleep')
-            self.after(1000, self.update, cycle, check, event_number)#no. 11,12,13,15,16 = sleep
+            self.after(1000, self.update, cycle, check, event_number)#no. 12,13,15,16,17 = sleep
         elif event_number == 14:
             check = 3
             print('from sleep to idle')
@@ -138,6 +139,10 @@ class Pigeon(tk.Tk):
             check = 7
             print('sing')
             self.after(600, self.update, cycle, check, event_number)#no. 10 = sing
+        elif event_number == 11:
+            check = 8
+            print('dance')
+            self.after(600, self.update, cycle, check, event_number)#no. 11 = dance
     
     def gif_work(self, cycle: int, frames: int, event_number: int, first_num: int, last_num: int) -> tuple[int, int]:
         if cycle < len(frames) - 1:
@@ -152,15 +157,15 @@ class Pigeon(tk.Tk):
         #idle
         if check == 0:
             frame = self.idle[cycle]
-            cycle, event_number = self.gif_work(cycle, self.idle, event_number, 1, 10)
+            cycle, event_number = self.gif_work(cycle, self.idle, event_number, 1, 11)
         #idle to sleep
         elif check == 1:
             frame = self.idle_to_sleep[cycle]
-            cycle, event_number = self.gif_work(cycle, self.idle_to_sleep, event_number, 11, 11)
+            cycle, event_number = self.gif_work(cycle, self.idle_to_sleep, event_number, 12, 12)
         #sleep
         elif check == 2:
             frame = self.sleep[cycle]
-            cycle, event_number = self.gif_work(cycle, self.sleep, event_number, 11, 16)
+            cycle, event_number = self.gif_work(cycle, self.sleep, event_number, 12, 17)
         #sleep to idle
         elif check == 3:
             frame = self.sleep_to_idle[cycle]
@@ -168,28 +173,39 @@ class Pigeon(tk.Tk):
         #walk toward left
         elif check == 4:
             frame = self.walk_positive[cycle]
-            cycle, event_number = self.gif_work(cycle, self.walk_positive, event_number, 1, 10)
+            cycle, event_number = self.gif_work(cycle, self.walk_positive, event_number, 1, 11)
             self.x -= 3 if self.x - 3 > 0 else 0
         #walk towards right
         elif check == 5:
             frame = self.walk_negative[cycle]
-            cycle, event_number = self.gif_work(cycle, self.walk_negative, event_number, 1, 10)
+            cycle, event_number = self.gif_work(cycle, self.walk_negative, event_number, 1, 11)
             self.x += 3 if self.x < self.winfo_screenwidth() - 100 else 0
         #eat
         elif check == 6:
             frame = self.eat[cycle]
-            cycle, event_number = self.gif_work(cycle, self.eat, event_number, 1, 10)
+            cycle, event_number = self.gif_work(cycle, self.eat, event_number, 1, 11)
         #sing
         elif check == 7:
             try:
                 spotify.get_info_windows()
                 frame = self.sing[cycle]
-                cycle, event_number = self.gif_work(cycle, self.sing, event_number, 1, 10)
+                cycle, event_number = self.gif_work(cycle, self.sing, event_number, 1, 11)
             except SpotifyNotRunning as e:
                 if cycle > 0:
                     cycle = 0
                 frame = self.idle[cycle]
-                cycle, event_number = self.gif_work(cycle, self.idle, 1, 1, 10)
+                cycle, event_number = self.gif_work(cycle, self.idle, 1, 1, 11)
+        #dance
+        elif check == 8:
+            try:
+                spotify.get_info_windows()
+                frame = self.dance[cycle]
+                cycle, event_number = self.gif_work(cycle, self.dance, event_number, 1, 11)
+            except SpotifyNotRunning as e:
+                if cycle > 0:
+                    cycle = 0
+                frame = self.idle[cycle]
+                cycle, event_number = self.gif_work(cycle, self.idle, 1, 1, 11)
         self.geometry(f'100x100+{self.x}+{self.y}')
         self.label.configure(image=frame)
         self.after(1, self.event, cycle, check, event_number)
