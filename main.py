@@ -182,6 +182,7 @@ class Pigeon(tk.Tk):
             self.x += 3 if self.x < self.winfo_screenwidth() - 100 else 0
         #eat
         elif check == 6:
+            cycle = 0
             frame = self.eat[cycle]
             cycle, event_number = self.gif_work(cycle, self.eat, event_number, 1, 11)
         #sing
