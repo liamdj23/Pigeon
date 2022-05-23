@@ -27,12 +27,12 @@ class Pigeon(tk.Tk):
         self.go_eat = False
         self.path = os.getenv("APPDATA") + "\\Pigeon"
         
-        self.autostart = True
+        self.autostart = tk.BooleanVar(value=True)
         registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
         try:
             winreg.QueryValueEx(registry_key, "Pigeon")
         except FileNotFoundError:
-            self.autostart = False
+            self.autostart.set(False)
         winreg.CloseKey(registry_key)
 
         self.idle = [tk.PhotoImage(file=self.resource_path("assets/idle.gif"), format='gif -index %i' %(i)) for i in range(5)] #idle gif
@@ -48,21 +48,21 @@ class Pigeon(tk.Tk):
         self.config(highlightbackground='black')
         self.overrideredirect(True)
         self.wm_attributes('-transparentcolor','black')
-        self.hide_under_apps = True
-        self.wm_attributes("-topmost", self.hide_under_apps)
+        self.hide_under_apps = tk.BooleanVar(value=False)
+        self.wm_attributes("-topmost", not self.hide_under_apps.get())
         self.label = tk.Label(self, bd=0, bg='black')
         self.label.pack()
 
         menu = tk.Menu(self, tearoff=0)
         def switch_hide_under_apps():
-            self.hide_under_apps = not self.hide_under_apps
-            self.wm_attributes("-topmost", self.hide_under_apps)
+            self.wm_attributes("-topmost", not self.hide_under_apps.get())
         menu.add_checkbutton(label="Hide under apps", command=switch_hide_under_apps, onvalue=True, offvalue=False, variable=self.hide_under_apps)
         if self.is_installed():
             menu.add_checkbutton(label="Autostart", command=self.switch_autostart, onvalue=True, offvalue=False, variable=self.autostart)
         menu.add_command(label="Exit", command=self.quit)
         menu.add_separator()
         menu.add_command(label="Created by liamdj23", state="disabled")
+
         def do_popup(event):
             try:
                 menu.tk_popup(event.x_root, event.y_root)
@@ -96,14 +96,14 @@ class Pigeon(tk.Tk):
 
     def switch_autostart(self) -> None:
         registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_ALL_ACCESS)
-        if not self.autostart:
+        if not self.autostart.get():
             winreg.SetValueEx(registry_key, "Pigeon", 0, winreg.REG_SZ, self.path + "\\pigeon.exe")
             winreg.CloseKey(registry_key)
-            self.autostart = True
+            self.autostart.set(True)
         else:
             winreg.DeleteValue(registry_key, "Pigeon")
             winreg.CloseKey(registry_key)
-            self.autostart = False
+            self.autostart.set(False)
 
     def event(self, cycle: int, check: int, event_number: int) -> None:
         if self.go_eat:
