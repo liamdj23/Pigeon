@@ -23,5 +23,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Pigeon-{{ $GITHUB_SHA }}
+        name: Pigeon-${{ github.sha }}
         path: dist/pigeon.exe
